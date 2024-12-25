@@ -1,23 +1,11 @@
-import React, {Children, JSX, useEffect} from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
-import {Col, Container, Row} from "react-bootstrap";
-import Layout from "./layout/Layout";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
-import Book from "./pages/Book";
+import Book from "./pages/book/page";
 
-
-
-function App() {
+function NotFound() {
     return (
-        <Layout title="Default">
-            <Container>
-                <Row>
-                    <Col>
-                        <p className="h1">Hello World</p>
-                    </Col>
-                </Row>
-            </Container>
-        </Layout>
+        <div>404 Not Found</div>
     )
 }
 
@@ -25,8 +13,8 @@ function Router() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<App />} />
-                <Route path="/book" element={<Book />} />
+                <Route path="/" element={<Book />} />
+                <Route path="/*" element={<NotFound />}/>
             </Routes>
         </BrowserRouter>
     )
