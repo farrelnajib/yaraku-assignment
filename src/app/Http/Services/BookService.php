@@ -27,7 +27,7 @@ class BookService
      *
      * @param string $bookId ID of the book that is going to be updated
      * @param array $book Validated book in form of associative array
-     * @return BookDTO The created book instance
+     * @return BookDTO The updated book instance
      * @throws ModelNotFoundException When the given ID does not exist in database
      */
     public function updateBook(string $bookId, array $book): BookDTO {
@@ -49,5 +49,17 @@ class BookService
         return Pagination::fromModel(Book::filter($input)->paginate($input->perPage), function (Book $book): BookDTO {
             return BookDTO::fromModel($book);
         });
+    }
+
+    /**
+     * Business logic to delete book. Throws `ModelNotFoundException` if the given ID does not exist in database
+     *
+     * @param string $bookId ID of the book that is going to be deleted
+     * @return void
+     * @throws ModelNotFoundException
+     */
+    public function deleteBook(string $bookId): void {
+        $bookDB = Book::findOrFail($bookId);
+        $bookDB->delete();
     }
 }

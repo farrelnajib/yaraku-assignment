@@ -21,10 +21,10 @@ class BookServiceTest extends TestCase
         $this->bookService = new BookService();
     }
 
-    private function seedBooks(): void
+    private function seedBooks(int $count): void
     {
         $books = [];
-        for ($i = 0; $i < 100; $i++) {
+        for ($i = 0; $i < $count; $i++) {
             $books[$i] = [
                 "title" => "Book " . ($i + 1),
                 "author" => "Author " . ($i + 1),
@@ -99,7 +99,7 @@ class BookServiceTest extends TestCase
      * @return void
      */
     public function testBooksWithDefaultPaginationListedSuccessfully() {
-        $this->seedBooks();
+        $this->seedBooks(100);
         $paginationRes = $this->bookService->listBooks(new ListBooksInput(null, null, null, null));
         $this->assertCount(15, $paginationRes->data);
     }
@@ -110,7 +110,7 @@ class BookServiceTest extends TestCase
      * @return void
      */
     public function testBooksWithCustomPerPageListedSuccessfully() {
-        $this->seedBooks();
+        $this->seedBooks(100);
         for ($i = 1; $i <= 10; $i++) {
             $perPage = rand(1, 100);
             $paginationRes = $this->bookService->listBooks(new ListBooksInput($perPage, null, null, null));
@@ -124,7 +124,7 @@ class BookServiceTest extends TestCase
      * @return void
      */
     public function testBooksWithSearchListedSuccessfully() {
-        $this->seedBooks();
+        $this->seedBooks(100);
         $testSuites = [
             [
                 "searchText" => "book",
@@ -147,6 +147,33 @@ class BookServiceTest extends TestCase
                 $condition = str_contains(strtolower($book->title), $searchText) || str_contains(strtolower($book->author), $searchText);
                 $this->assertEquals($testSuite["isFound"], $condition);
             }
+        }
+    }
+
+    /**
+     * Test if deleteBook will return Exception specified in the test suites
+     *
+     * @return void
+     */
+    public function testValidateTitleRequiredOnUpdateBook()
+    {
+        $testSuites = [
+            [
+                "id" => 1,
+                "exception" => null,
+            ],
+            [
+                "id" => 1,
+                "exception" => ModelNotFoundException::class,
+            ]
+        ];
+
+        $this->seedBooks(1);
+        foreach ($testSuites as $testSuite) {
+            if ($testSuite["exception"] !== null) {
+                $this->expectException($testSuite["exception"]);
+            }
+            $this->bookService->deleteBook($testSuite["id"]);
         }
     }
 }

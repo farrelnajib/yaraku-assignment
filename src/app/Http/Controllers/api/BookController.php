@@ -4,12 +4,14 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Http\DTO\ListBooksInput;
-use App\Http\DTO\Response;
+use App\Http\DTO\Response as ResponseDTO;
 use App\Http\Requests\StoreBook;
 use App\Http\Services\BookService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class BookController extends Controller
@@ -31,22 +33,26 @@ class BookController extends Controller
     {
         $validated = $request->validated();
         $book = $this->bookService->createBook($validated);
-        return response()->json(new Response($book), 201);
+        return response()->json(new ResponseDTO($book), 201);
     }
 
     /**
      * Validate and then create a new book in the system
      *
      * @param StoreBook $request
-     * @param int $id
+     * @param int $id ID of the book that is going to be updated
      * @return JsonResponse The updated book instance.
      * @throws ModelNotFoundException When the provided id is not valid
      */
     public function update(StoreBook $request, int $id): JsonResponse
     {
-        $validated = $request->validated();
-        $book = $this->bookService->updateBook($id, $validated);
-        return response()->json(new Response($book));
+        try {
+            $validated = $request->validated();
+            $book = $this->bookService->updateBook($id, $validated);
+            return response()->json(new ResponseDTO($book));
+        } catch (ModelNotFoundException $exception) {
+            return response()->json(['message' => 'Book not found'], 404);
+        }
     }
 
     /**
@@ -58,5 +64,21 @@ class BookController extends Controller
     public function index(Request $request): JsonResponse
     {
         return response()->json($this->bookService->listBooks(ListBooksInput::fromRequest($request)));
+    }
+
+    /**
+     * List books in the system in pagination format
+     *
+     * @param int $id ID of the book that is going to be deleted
+     * @return JsonResponse
+     */
+    public function delete(int $id): JsonResponse
+    {
+        try {
+            $this->bookService->deleteBook($id);
+            return response()->json(null, 204);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Book not found'], 404);
+        }
     }
 }
