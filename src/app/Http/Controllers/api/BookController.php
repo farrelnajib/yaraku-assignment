@@ -8,6 +8,7 @@ use App\Http\Requests\StoreBook;
 use App\Http\Services\BookService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class BookController extends Controller
@@ -37,7 +38,7 @@ class BookController extends Controller
      *
      * @param StoreBook $request
      * @param int $id
-     * @return JsonResponse The created book instance.
+     * @return JsonResponse The updated book instance.
      * @throws ModelNotFoundException When the provided id is not valid
      */
     public function update(StoreBook $request, int $id): JsonResponse
@@ -45,5 +46,16 @@ class BookController extends Controller
         $validated = $request->validated();
         $book = $this->bookService->updateBook($id, $validated);
         return response()->json(new Response($book));
+    }
+
+    /**
+     * List books in the system in pagination format
+     *
+     * @param StoreBook $request
+     * @return JsonResponse The list of books instance in pagination format.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        return response()->json($this->bookService->listBooks($request->input('per_page')));
     }
 }

@@ -20,6 +20,21 @@ class BookServiceTest extends TestCase
         $this->bookService = new BookService();
     }
 
+    private function seedBooks(): void
+    {
+        $books = [];
+        for ($i = 0; $i < 100; $i++) {
+            $books[$i] = [
+                "title" => "Book " . ($i + 1),
+                "author" => "Author " . ($i + 1),
+                "created_at" => now(),
+                "updated_at" => now(),
+            ];
+        }
+
+        Book::insert($books);
+    }
+
     /**
      * Test if create book is successful and the entity exist in db
      *
@@ -74,5 +89,31 @@ class BookServiceTest extends TestCase
         ]);
         $this->assertEquals("Title 1", $book->title);
         $this->assertEquals("Author Edit", $book->author);
+    }
+
+    /**
+     * Test if listBooks without any params will return 15 items.
+     * the default $perPage is 15
+     *
+     * @return void
+     */
+    public function testBooksWithDefaultPaginationListedSuccessfully() {
+        $this->seedBooks();
+        $paginationRes = $this->bookService->listBooks(null);
+        $this->assertCount(15, $paginationRes->data);
+    }
+
+    /**
+     * Test if listBooks with `per_page` parameter will return the exact number of data
+     *
+     * @return void
+     */
+    public function testBooksWithCustomPerPageListedSuccessfully() {
+        $this->seedBooks();
+        for ($i = 1; $i <= 10; $i++) {
+            $perPage = rand(1, 100);
+            $paginationRes = $this->bookService->listBooks($perPage);
+            $this->assertCount($perPage, $paginationRes->data);
+        }
     }
 }
