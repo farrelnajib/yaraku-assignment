@@ -4,6 +4,7 @@ namespace App\Http\Services;
 
 use App\Http\DTO\Book as BookDTO;
 use App\Book;
+use App\Http\DTO\ListBooksInput;
 use App\Http\DTO\Pagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -40,12 +41,12 @@ class BookService
     /**
      * Business logic to list books in pagination
      *
-     * @param int|null $perPage
+     * @param ListBooksInput $input
      * @return Pagination The result of books list in pagination
      */
-    public function listBooks(?int $perPage): Pagination
+    public function listBooks(ListBooksInput $input): Pagination
     {
-        return Pagination::fromModel(Book::query()->paginate($perPage), function (Book $book): BookDTO {
+        return Pagination::fromModel(Book::filter($input)->paginate($input->perPage), function (Book $book): BookDTO {
             return BookDTO::fromModel($book);
         });
     }

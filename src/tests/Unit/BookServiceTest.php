@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 //use PHPUnit\Framework\TestCase;
 use App\Book;
+use App\Http\DTO\ListBooksInput;
 use App\Http\Services\BookService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -99,12 +100,12 @@ class BookServiceTest extends TestCase
      */
     public function testBooksWithDefaultPaginationListedSuccessfully() {
         $this->seedBooks();
-        $paginationRes = $this->bookService->listBooks(null);
+        $paginationRes = $this->bookService->listBooks(new ListBooksInput(null, null, null, null));
         $this->assertCount(15, $paginationRes->data);
     }
 
     /**
-     * Test if listBooks with `per_page` parameter will return the exact number of data
+     * Test if listBooks with `$perPage` parameter will return the exact number of data
      *
      * @return void
      */
@@ -112,8 +113,40 @@ class BookServiceTest extends TestCase
         $this->seedBooks();
         for ($i = 1; $i <= 10; $i++) {
             $perPage = rand(1, 100);
-            $paginationRes = $this->bookService->listBooks($perPage);
+            $paginationRes = $this->bookService->listBooks(new ListBooksInput($perPage, null, null, null));
             $this->assertCount($perPage, $paginationRes->data);
+        }
+    }
+
+    /**
+     * Test if listBooks with `$searchText` parameter will return data where title OR author contains the searched text
+     *
+     * @return void
+     */
+    public function testBooksWithSearchListedSuccessfully() {
+        $this->seedBooks();
+        $testSuites = [
+            [
+                "searchText" => "book",
+                "isFound" => true,
+            ],
+            [
+                "searchText" => "author",
+                "isFound" => true,
+            ],
+            [
+                "searchText" => "random",
+                "isFound" => false,
+            ]
+        ];
+
+        foreach ($testSuites as $testSuite) {
+            $searchText = $testSuite["searchText"];
+            $paginationRes = $this->bookService->listBooks(new ListBooksInput(null, $searchText, null, null));
+            foreach ($paginationRes->data as $book) {
+                $condition = str_contains(strtolower($book->title), $searchText) || str_contains(strtolower($book->author), $searchText);
+                $this->assertEquals($testSuite["isFound"], $condition);
+            }
         }
     }
 }

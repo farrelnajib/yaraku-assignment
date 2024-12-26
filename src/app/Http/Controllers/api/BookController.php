@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
+use App\Http\DTO\ListBooksInput;
 use App\Http\DTO\Response;
 use App\Http\Requests\StoreBook;
 use App\Http\Services\BookService;
@@ -56,6 +57,6 @@ class BookController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        return response()->json($this->bookService->listBooks($request->input('per_page')));
+        return response()->json($this->bookService->listBooks(ListBooksInput::fromRequest($request)));
     }
 }
