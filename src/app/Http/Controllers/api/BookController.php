@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
+use App\Http\DTO\Response;
 use App\Http\Requests\StoreBook;
 use App\Http\Services\BookService;
 use Illuminate\Http\JsonResponse;
@@ -27,6 +28,6 @@ class BookController extends Controller
     {
         $validated = $request->validated();
         $book = $this->bookService->createBook($validated);
-        return response()->json($book, 201);
+        return response()->json(new Response($book), 201);
     }
 }

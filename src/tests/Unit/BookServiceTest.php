@@ -27,8 +27,8 @@ class BookServiceTest extends TestCase
     public function testCreateBookSuccessfully()
     {
         $data = [
-            "title" => "asd",
-            "author" => "asd",
+            "title" => "Title 1",
+            "author" => "Author 1",
         ];
 
         $book = $this->bookService->createBook($data);
