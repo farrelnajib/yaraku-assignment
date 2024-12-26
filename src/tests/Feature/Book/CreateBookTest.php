@@ -14,7 +14,7 @@ class CreateBookTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Test if POST /api/books returned 201 with valid object returned
+     * Test if POST `/api/books` returned 201 with valid object returned
      *
      * @return void
      */
@@ -30,7 +30,7 @@ class CreateBookTest extends TestCase
     }
 
     /**
-     * Test if POST /api/books returned 422 when title does not exist
+     * Test if POST `/api/books` returned 422 when title does not exist
      *
      * @return void
      */
@@ -45,7 +45,7 @@ class CreateBookTest extends TestCase
     }
 
     /**
-     * Test if POST /api/books returned 422 when title does not exist
+     * Test if POST `/api/books` returned 422 when author does not exist
      *
      * @return void
      */
@@ -57,5 +57,18 @@ class CreateBookTest extends TestCase
 
         $response = $this->post("/api/books", $bookData, $this->defaultHeaders);
         $response->assertStatus(422)->assertJsonValidationErrors(["author"]);
+    }
+
+    /**
+     * Test if POST `/api/books` returned 422 when title and author does not exist
+     *
+     * @return void
+     */
+    public function testValidateAuthorAndTitleRequiredOnCreateBook()
+    {
+        $bookData = [];
+
+        $response = $this->post("/api/books", $bookData, $this->defaultHeaders);
+        $response->assertStatus(422)->assertJsonValidationErrors(["title", "author"]);
     }
 }
