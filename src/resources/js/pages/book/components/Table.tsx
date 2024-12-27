@@ -1,39 +1,8 @@
 import {Button, Col, Row, Table} from "react-bootstrap";
-import React, {JSX, useEffect, useMemo, useState} from "react";
-import {useFormTable, FormData} from "../contexts/FormTableContext";
-import axios from "axios";
+import React, {JSX, useMemo} from "react";
+import {useFormTable} from "../contexts/FormTableContext";
 import PaginationComponent from "../../../components/pagination/Pagination";
-
-/**
- * Fetches table data from the API based on the given parameters.
- *
- * @param {Object} params - The parameters for the API call.
- * @param {string} params.searchTerm - The search term for filtering data.
- * @param {keyof FormData | null} params.sortField - The field to sort by.
- * @param {'asc' | 'desc'} params.sortDirection - The sorting direction.
- * @param {number} params.currentPage - The current page number.
- * @param {number} params.perPage - The number of items per page.
- * @returns {Promise<{ data: FormData[]; lastPage: number }>} The fetched table data and total pages.
- */
-const fetchTableData = async ({ searchTerm, sortField, sortDirection, currentPage, perPage }: {
-    searchTerm: string;
-    sortField: keyof FormData | null;
-    sortDirection: 'asc' | 'desc';
-    currentPage: number;
-    perPage: number;
-}): Promise<{ data: FormData[]; lastPage: number; }> => {
-    const response = await axios.get("/api/books", {
-        params: {
-            search_text: searchTerm,
-            sort_field: sortField,
-            sort_direction: sortDirection,
-            current_page: currentPage,
-            per_page: perPage,
-        }
-    });
-
-    return response.data;
-};
+import {FormData} from "../types";
 
 /**
  * TableHeader - Handles sort in table header
@@ -116,46 +85,18 @@ const LoadingIndicator = ({ colSpan }: { colSpan: number }): JSX.Element => (
  */
 export default function TableComponent() {
     const {
-        searchTerm,
+        isLoading,
+        error,
+        sortField,
+        sortDirection,
+        tableData,
         perPage,
         currentPage,
-        setCurrentPage,
+        totalPages,
+        handlePageClick,
+        handleSort,
     } = useFormTable();
 
-    const [tableData, setTableData] = useState<FormData[]>([]);
-    const [totalPages, setTotalPages] = useState(0);
-    const [isLoading, setIsLoading] = useState(false);
-
-    const [sortField, setSortField] = useState<keyof FormData | null>(null);
-    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        setIsLoading(true);
-        setError(null);
-        fetchTableData({
-            searchTerm,
-            sortField,
-            sortDirection,
-            currentPage,
-            perPage,
-        }).then(data => {
-            setTableData(data.data);
-            setTotalPages(data.lastPage);
-        }).catch(err => {
-            console.log(err);
-            setError("Failed to load table data. Please try again.");
-        }).finally(() => {
-            setIsLoading(false);
-
-        })
-    }, [perPage, searchTerm, currentPage, sortField, sortDirection]);
-
-    const handleSort = (column: keyof FormData) => {
-        setSortDirection((sortField == null) ? "asc" : (sortDirection == "asc" ? "desc" : "asc"));
-        setSortField(column);
-    };
 
     const dataComponent = useMemo(() => (
         tableData.map((item, index) => (
@@ -188,7 +129,7 @@ export default function TableComponent() {
                         <PaginationComponent
                             currentPage={currentPage}
                             totalPages={totalPages}
-                            setCurrentPage={setCurrentPage}
+                            handlePageClick={handlePageClick}
                         />}
                     </Col>
                 </Row>

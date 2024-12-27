@@ -3,11 +3,7 @@ import React from "react";
 import * as formik from "formik";
 import * as yup from "yup";
 import {FormikHelpers, FormikValues} from "formik";
-
-interface FormValues {
-    title: string;
-    author: string;
-}
+import {FormValues} from "../types";
 
 export default function FormComponent() {
     const {Formik} = formik;
@@ -25,7 +21,7 @@ export default function FormComponent() {
     }
 
     return (
-        <Row className="mb-5">
+        <Row className="mb-3">
             <Col>
                 <Card>
                     <Card.Body>

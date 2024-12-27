@@ -1,14 +1,6 @@
 import React, {JSX, useMemo} from "react";
 import {Pagination} from "react-bootstrap";
-
-/**
- * Props for `PaginationComponent`.
- */
-interface PaginationProps {
-    currentPage: number;
-    totalPages: number;
-    setCurrentPage: (page: number) => void;
-}
+import {PaginationProps} from "./types";
 
 /**
  * calculatePageRange - Calculate smallest and largest page number
@@ -56,19 +48,14 @@ const calculatePageRange = (currentPage: number, totalPages: number, range: numb
  * @param {Object} props - The props for the component
  * @param {number} props.currentPage - The current active page
  * @param {number} props.totalPages - The total number of pages.
- * @param {(page: number) => void} props.setCurrentPage - The action when a page is clicked.
+ * @param {(page: number) => void} props.handlePageClick - The action when a page is clicked.
  * @returns {JSX.Element} - A pagination component.
  */
-const PaginationComponent: React.FC<PaginationProps> = ({currentPage, totalPages, setCurrentPage}: {
+const PaginationComponent: React.FC<PaginationProps> = ({currentPage, totalPages, handlePageClick}: {
     currentPage: number;
     totalPages: number;
-    setCurrentPage: (page: number) => void;
+    handlePageClick: (page: number) => void;
 }): JSX.Element => {
-    const handlePageClick = (page: number) => {
-        if (page !== currentPage) {
-            setCurrentPage(page);
-        }
-    }
 
     const {smallest, largest} = calculatePageRange(currentPage, totalPages);
 
@@ -76,7 +63,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({currentPage, totalPages
         const pageArray: JSX.Element[] = [];
         for (let idx = smallest; idx <= largest; idx++) {
             pageArray.push(
-                <Pagination.Item key={idx} active={idx == currentPage} onClick={() => setCurrentPage(idx)}>
+                <Pagination.Item key={idx} active={idx == currentPage} onClick={() => handlePageClick(idx)}>
                     {idx}
                 </Pagination.Item>
             )

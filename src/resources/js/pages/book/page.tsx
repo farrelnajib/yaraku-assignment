@@ -14,8 +14,12 @@ export default function Book() {
                 <Navbar />
                 <Container>
                     <FormComponent />
-                    <SearchComponent />
-                    <TableComponent />
+                    <Card className="mb-3">
+                        <Card.Body>
+                            <SearchComponent />
+                            <TableComponent />
+                        </Card.Body>
+                    </Card>
                 </Container>
             </Layout>
         </FormTableProvider>

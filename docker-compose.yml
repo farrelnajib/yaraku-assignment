@@ -10,7 +10,7 @@ services:
       DB_HOST: mysql
       DB_PASSWORD: secret
       DB_USERNAME: laravel
-      APP_DEBUG: 'true'
+      APP_DEBUG: 'false'
       APP_ENV: local
       APP_KEY: ayGbuqVXJakHHvMTZCjKqzhVqMNsHMQs
       LOG_CHANNEL: stderr
