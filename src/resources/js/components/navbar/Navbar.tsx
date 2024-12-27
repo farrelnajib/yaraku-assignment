@@ -1,7 +1,7 @@
 import React from "react";
 import {Container, Navbar} from "react-bootstrap";
 
-export default function NavBar() {
+export default function NavbarComponent() {
     return (
         <Navbar expand="lg" className="bg-body-tertiary mb-3">
             <Container>

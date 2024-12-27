@@ -24,10 +24,13 @@
         "webpack-cli": "^6.0.1"
     },
     "dependencies": {
+        "@types/lodash.debounce": "^4.0.9",
         "@types/react": "^19.0.2",
         "@types/react-dom": "^19.0.2",
         "bootstrap": "^5.3.3",
+        "debounce": "^2.2.0",
         "formik": "^2.4.6",
+        "lodash.debounce": "^4.0.8",
         "react": "^19.0.0",
         "react-bootstrap": "^2.10.7",
         "react-dom": "^19.0.0",
