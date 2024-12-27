@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Http\DTO\ListBooksInput;
+use App\Http\DTO\Requests\ListBooksInput;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 

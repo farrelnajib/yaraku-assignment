@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\DTO;
+namespace App\Http\DTO\Responses;
 
-use Illuminate\Pagination\LengthAwarePaginator;
 use Closure;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class Pagination
 {

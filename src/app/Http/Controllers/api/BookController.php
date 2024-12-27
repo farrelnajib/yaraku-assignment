@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
-use App\Http\DTO\ListBooksInput;
-use App\Http\DTO\Response as ResponseDTO;
+use App\Http\DTO\Requests\ListBooksInput;
+use App\Http\DTO\Responses\ExportResponse;
+use App\Http\DTO\Responses\Response as ResponseDTO;
 use App\Http\Requests\StoreBook;
 use App\Http\Services\BookService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class BookController extends Controller
@@ -79,6 +79,29 @@ class BookController extends Controller
             return response()->json(null, 204);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Book not found'], 404);
+        }
+    }
+
+    /**
+     * Export books in the system in csv / xml format.
+     * Returns 400 if `type` query is neither `csv` nor `xml`
+     *
+     * @param Request $request
+     * @return Response
+     */
+    public function export(Request $request): Response
+    {
+        $type = $request->query("type");
+        $fields = $request->query("fields", ["title", "author"]);
+        switch ($type) {
+            case 'csv':
+                $csvRes = $this->bookService->exportToCsv(ListBooksInput::fromRequest($request), $fields);
+                return $csvRes->toResponse();
+            case 'xml':
+                $xmlRes = $this->bookService->exportToXml(ListBooksInput::fromRequest($request), $fields);
+                return $xmlRes->toResponse();
+            default:
+                return Response::create(["message" => "Invalid type"], 400, ["Content-Type" => "application/json"]);
         }
     }
 }

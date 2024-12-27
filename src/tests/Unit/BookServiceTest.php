@@ -4,7 +4,7 @@ namespace Tests\Unit;
 
 //use PHPUnit\Framework\TestCase;
 use App\Book;
-use App\Http\DTO\ListBooksInput;
+use App\Http\DTO\Requests\ListBooksInput;
 use App\Http\Services\BookService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -155,7 +155,7 @@ class BookServiceTest extends TestCase
      *
      * @return void
      */
-    public function testValidateTitleRequiredOnUpdateBook()
+    public function testDeleteBook()
     {
         $testSuites = [
             [
@@ -175,5 +175,29 @@ class BookServiceTest extends TestCase
             }
             $this->bookService->deleteBook($testSuite["id"]);
         }
+    }
+
+    /**
+     * Test if `exportCsv` returns `ExportResponse` with `contentType` equals `text/csv`
+     *
+     * @return void
+     */
+    public function testCsvExportedSuccessfully()
+    {
+        $this->seedBooks(10);
+        $res = $this->bookService->exportToCsv(new ListBooksInput(null, null, null, null), ["title", "author"]);
+        $this->assertEquals("text/csv", $res->contentType);
+    }
+
+    /**
+     * Test if `exportXml` returns `ExportResponse` with `contentType` equals `text/xml`
+     *
+     * @return void
+     */
+    public function testXmlExportedSuccessfully()
+    {
+        $this->seedBooks(10);
+        $res = $this->bookService->exportToXml(new ListBooksInput(null, null, null, null), ["title", "author"]);
+        $this->assertEquals("text/xml", $res->contentType);
     }
 }

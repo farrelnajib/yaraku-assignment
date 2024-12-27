@@ -2,12 +2,16 @@
 
 namespace App\Http\Services;
 
-use App\Http\DTO\Book as BookDTO;
 use App\Book;
-use App\Http\DTO\ListBooksInput;
-use App\Http\DTO\Pagination;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use App\Exports\BooksExport;
+use App\Http\DTO\Book as BookDTO;
+use App\Http\DTO\Requests\ListBooksInput;
+use App\Http\DTO\Responses\ExportResponse;
+use App\Http\DTO\Responses\Pagination;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Maatwebsite\Excel\Facades\Excel;
+use Spatie\ArrayToXml\ArrayToXml;
+use Maatwebsite\Excel\Excel as ExcelType;
 
 class BookService
 {
@@ -61,5 +65,36 @@ class BookService
     public function deleteBook(string $bookId): void {
         $bookDB = Book::findOrFail($bookId);
         $bookDB->delete();
+    }
+
+    /**
+     * Business logic to export all books to csv with filter and sort (pagination ignored)
+     *
+     * @param ListBooksInput $input
+     * @param array $fields
+     * @return ExportResponse
+     */
+    public function exportToCsv(ListBooksInput $input, array $fields): ExportResponse
+    {
+        $books = Book::filter($input)->get($fields);
+        $resData = Excel::raw(new BooksExport($books, $fields), ExcelType::CSV);
+        return new ExportResponse($resData, "books-" . now() . ".csv", "text/csv");
+    }
+
+    /**
+     * Business logic to export all books to xml with filter and sort (pagination ignored)
+     *
+     * @param ListBooksInput $input
+     * @param array $fields
+     * @return ExportResponse
+     */
+    public function exportToXml(ListBooksInput $input, array $fields): ExportResponse
+    {
+        $books = Book::filter($input)->get($fields);
+        $arr = [
+            "books" => $books->toArray()
+        ];
+        $resData = ArrayToXml::convert($arr, 'books');
+        return new ExportResponse($resData, "books-" . now() . ".xml", "text/xml");
     }
 }

@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\DTO;
+namespace App\Http\DTO\Responses;
 
 class Response
 {
