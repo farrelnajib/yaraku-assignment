@@ -2,6 +2,8 @@ import {useFormTable} from "../contexts/FormTableContext";
 import { JSX} from "react";
 import {Button, Col, Form, InputGroup, Row} from "react-bootstrap";
 import React from "react";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faDownload, faMagnifyingGlass} from "@fortawesome/free-solid-svg-icons";
 
 /**
  * A `<Row>` displaying items per page selection and search input
@@ -36,7 +38,7 @@ export default function SearchComponent(): JSX.Element {
             </Col>
             <Col lg={6} md={6} xs={12}>
                 <InputGroup>
-                    <InputGroup.Text id="searchInput">Search</InputGroup.Text>
+                    <InputGroup.Text id="searchInput"><FontAwesomeIcon icon={faMagnifyingGlass} /></InputGroup.Text>
                     <Form.Control
                         type="text"
                         placeholder="Search by title or author"
@@ -52,7 +54,7 @@ export default function SearchComponent(): JSX.Element {
                         <option value={"csv"}>CSV</option>
                         <option value={"xml"}>XML</option>
                     </Form.Select>
-                    <Button variant="primary">Export</Button>
+                    <Button variant="primary"><FontAwesomeIcon icon={faDownload} /> Export</Button>
                 </InputGroup>
             </Col>
         </Row>

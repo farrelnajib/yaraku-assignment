@@ -1,6 +1,8 @@
 import {Button, Card, Col, Form, Row, Stack} from "react-bootstrap";
 import React, {JSX} from "react";
 import {useFormTable} from "../contexts/FormTableContext";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faFloppyDisk} from "@fortawesome/free-solid-svg-icons";
 
 /**
  * A form group to create or edit book
@@ -57,7 +59,7 @@ export default function FormComponent(): JSX.Element {
                             <Row>
                                 <Col>
                                     <Stack direction="horizontal" gap={2}>
-                                        <Button type="submit" disabled={isEmpty}>Submit</Button>
+                                        <Button type="submit" disabled={isEmpty}><FontAwesomeIcon icon={faFloppyDisk} /> Submit</Button>
                                         <Button type="reset" variant="secondary" onClick={handleResetForm}>Reset</Button>
                                     </Stack>
                                 </Col>

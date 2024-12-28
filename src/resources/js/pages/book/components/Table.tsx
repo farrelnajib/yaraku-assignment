@@ -3,6 +3,8 @@ import React, {JSX, useMemo} from "react";
 import {useFormTable} from "../contexts/FormTableContext";
 import PaginationComponent from "../../../components/pagination/Pagination";
 import {FormData} from "../types";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faPenToSquare, faTrash} from "@fortawesome/free-solid-svg-icons";
 
 /**
  * TableHeader - Handles sort in table header
@@ -78,9 +80,9 @@ export default function TableComponent() {
                 <td>{item.title}</td>
                 <td>{item.author}</td>
                 <td>
-                    <Button variant="primary" onClick={() => handleEditData(index)}>Edit</Button>
+                    <Button variant="primary" onClick={() => handleEditData(index)}><FontAwesomeIcon icon={faPenToSquare} /></Button>
                     &nbsp;
-                    <Button variant="danger" onClick={() => handleDeleteData(item.id!)}>Delete</Button>
+                    <Button variant="danger" onClick={() => handleDeleteData(item.id!)}><FontAwesomeIcon icon={faTrash} /></Button>
                 </td>
             </tr>
         ))
