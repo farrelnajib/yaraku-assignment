@@ -23,6 +23,7 @@ export default function FormComponent(): JSX.Element {
             <Col>
                 <Card>
                     <Card.Body>
+                        {submitFormError && <div className="alert alert-danger">{submitFormError.message}</div>}
                         <Form noValidate onSubmit={handleSubmitForm}>
                             <Row>
                                 <Form.Group className="mb-3" controlId="title" as={Col}>
@@ -31,6 +32,7 @@ export default function FormComponent(): JSX.Element {
                                         type="text"
                                         placeholder="Lorem ipsum dolor sit amet"
                                         name="title"
+                                        disabled={formData.id !== undefined}
                                         value={formData.title}
                                         onChange={handleInputChange}
                                         isInvalid={!!submitFormError?.errors?.title}

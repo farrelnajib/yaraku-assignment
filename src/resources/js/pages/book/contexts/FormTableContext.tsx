@@ -3,7 +3,7 @@ import {FormTableContextType, FormData} from "../types";
 import axios, {AxiosResponse} from "axios";
 import debounce from "lodash.debounce";
 import {handleAPIError} from "../../../helpers/errors";
-import {APIErrors, ValidationErrors} from "../../../helpers/types";
+import {APIErrors} from "../../../helpers/types";
 
 /**
  * FormTableContext provides state and methods for managing table and form interactions.
@@ -52,17 +52,19 @@ const getListBooks = async ({ searchTerm, sortField, sortDirection, currentPage,
 /**
  * Send form data to the API.
  *
- * @param {FormData} formData
+ * @param {FormData} data
  * @returns {Promise<AxiosResponse>} The raw API response.
  *
  */
-const createBook = async (formData: FormData): Promise<AxiosResponse> => {
+const createBook = async (data: FormData): Promise<AxiosResponse> => {
     let url = "/api/books";
-    if (formData.id) {
-        url += `/${formData.id}`;
+    let method = "post";
+    if (data.id) {
+        url += `/${data.id}`;
+        method = "put";
     }
 
-    return await axios.post(url, formData);
+    return await axios.request({method, url, data});
 }
 
 /**
@@ -115,7 +117,12 @@ export const FormTableProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
                 const apiErr = handleAPIError(error);
                 setSubmitFormError(apiErr);
             })
-    }, [formData])
+    }, [formData]);
+
+    const handleEditData = useCallback((idx: number) => {
+        const dataToEdit = tableData[idx];
+        setFormData(dataToEdit);
+    }, [tableData])
 
     const handleSort = useCallback((column: keyof FormData) => {
         setSortDirection((sortField == null) ? "asc" : (sortDirection == "asc" ? "desc" : "asc"));
@@ -180,6 +187,7 @@ export const FormTableProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
             handleInputChange,
             handleSubmitForm,
             handleResetForm,
+            handleEditData,
 
             // Search related context
             searchTerm,

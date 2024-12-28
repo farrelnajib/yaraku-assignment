@@ -42,18 +42,19 @@ const TableHeader = ({ onSort, sortField, sortDirection }: {
  * @param {number} props.perPage - Number of items displayed per page.
  * @returns {JSX.Element} A table row component.
  */
-const TableRow = ({ item, index, currentPage, perPage }: {
+const TableRow = ({ item, index, currentPage, perPage, handleEditData }: {
     item: FormData,
     index: number,
     currentPage: number,
     perPage: number,
+    handleEditData: (idx: number) => void
 }): JSX.Element => (
     <tr key={index}>
         <td>{(currentPage - 1) * perPage + index + 1}</td>
         <td>{item.title}</td>
         <td>{item.author}</td>
         <td>
-            <Button variant="primary">Edit</Button>
+            <Button variant="primary" onClick={() => handleEditData(index)}>Edit</Button>
             &nbsp;
             <Button variant="danger">Delete</Button>
         </td>
@@ -85,6 +86,7 @@ const LoadingIndicator = ({ colSpan }: { colSpan: number }): JSX.Element => (
  */
 export default function TableComponent() {
     const {
+        handleEditData,
         isLoading,
         fetchTableDataError,
         sortField,
@@ -106,6 +108,7 @@ export default function TableComponent() {
                 index={index}
                 currentPage={currentPage}
                 perPage={perPage}
+                handleEditData={handleEditData}
             />
         ))
     ), [tableData, currentPage, perPage])

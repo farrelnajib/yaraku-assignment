@@ -17,6 +17,7 @@ export interface FormTableContextType {
     handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     handleSubmitForm: (e: React.FormEvent<HTMLFormElement>) => void;
     handleResetForm: () => void;
+    handleEditData: (idx: number) => void;
 
     // Search related context
     searchTerm: string;
