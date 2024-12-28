@@ -19,6 +19,7 @@ export interface FormTableContextType {
     handleResetForm: () => void;
     handleEditData: (idx: number) => void;
     handleDeleteData: (id: number) => void;
+    handleExport: ({type, fields}: {type: 'csv' | 'xml'; fields: string[]}) => void;
 
     // Search related context
     searchTerm: string;

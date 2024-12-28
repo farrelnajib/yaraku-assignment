@@ -1,5 +1,5 @@
 import {useFormTable} from "../contexts/FormTableContext";
-import { JSX} from "react";
+import {ChangeEvent, ChangeEventHandler, JSX, useCallback, useState} from "react";
 import {Button, Col, Form, InputGroup, Row} from "react-bootstrap";
 import React from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -19,8 +19,8 @@ export default function SearchComponent(): JSX.Element {
     } = useFormTable();
 
     return (
-        <Row className="justify-content-between mb-2">
-            <Col lg={3} md={6} xs={12}>
+        <Row className="justify-content-between mb-2 g-3">
+            <Col lg={4} md={6} xs={12}>
                 <Form.Group as={Row}>
                     <Col xl={4} xs={6}>
                         <Form.Select
@@ -46,15 +46,6 @@ export default function SearchComponent(): JSX.Element {
                         onChange={handleSearchInput}
                         aria-labelledby="searchInput"
                     />
-                </InputGroup>
-            </Col>
-            <Col lg={3} md={6} xs={12}>
-                <InputGroup>
-                    <Form.Select>
-                        <option value={"csv"}>CSV</option>
-                        <option value={"xml"}>XML</option>
-                    </Form.Select>
-                    <Button variant="primary"><FontAwesomeIcon icon={faDownload} /> Export</Button>
                 </InputGroup>
             </Col>
         </Row>

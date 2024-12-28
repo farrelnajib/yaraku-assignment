@@ -153,6 +153,16 @@ export const FormTableProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
             });
     }, [fetchTableData])
 
+    const handleExport = useCallback(({type, fields}: {type: 'csv' | 'xml'; fields: string[]}) => {
+        const params = new URLSearchParams();
+        params.append('type', type);
+        fields.forEach(field => params.append('fields[]', field));
+
+        const queryString = params.toString();
+        const url = `/api/books/export?${queryString}`
+        window.open(url, "_blank");
+    }, [])
+
     useEffect(() => {
         fetchTableData();
     }, [fetchTableData, perPage, debouncedSearchTerm, currentPage, sortField, sortDirection]);
@@ -167,6 +177,7 @@ export const FormTableProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
             handleResetForm,
             handleEditData,
             handleDeleteData,
+            handleExport,
 
             // Search related context
             searchTerm,
