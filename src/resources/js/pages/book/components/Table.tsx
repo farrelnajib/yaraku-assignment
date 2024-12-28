@@ -33,35 +33,6 @@ const TableHeader = ({ onSort, sortField, sortDirection }: {
 );
 
 /**
- * TableRow - A single row in the table displaying item details.
- *
- * @param {Object} props - The props for the component.
- * @param {number} props.index - The index of the row.
- * @param {FormData} props.item - The data for the row.
- * @param {number} props.currentPage - The current page of the table.
- * @param {number} props.perPage - Number of items displayed per page.
- * @returns {JSX.Element} A table row component.
- */
-const TableRow = ({ item, index, currentPage, perPage, handleEditData }: {
-    item: FormData,
-    index: number,
-    currentPage: number,
-    perPage: number,
-    handleEditData: (idx: number) => void
-}): JSX.Element => (
-    <tr key={index}>
-        <td>{(currentPage - 1) * perPage + index + 1}</td>
-        <td>{item.title}</td>
-        <td>{item.author}</td>
-        <td>
-            <Button variant="primary" onClick={() => handleEditData(index)}>Edit</Button>
-            &nbsp;
-            <Button variant="danger">Delete</Button>
-        </td>
-    </tr>
-);
-
-/**
  * LoadingIndicator - Loading Indicator for Table. Need to provide `colSpan` as params
  *
  * @param {number} colSpan
@@ -87,6 +58,7 @@ const LoadingIndicator = ({ colSpan }: { colSpan: number }): JSX.Element => (
 export default function TableComponent() {
     const {
         handleEditData,
+        handleDeleteData,
         isLoading,
         fetchTableDataError,
         sortField,
@@ -99,17 +71,18 @@ export default function TableComponent() {
         handleSort,
     } = useFormTable();
 
-
     const dataComponent = useMemo(() => (
         tableData.map((item, index) => (
-            <TableRow
-                key={index}
-                item={item}
-                index={index}
-                currentPage={currentPage}
-                perPage={perPage}
-                handleEditData={handleEditData}
-            />
+            <tr key={index}>
+                <td>{(currentPage - 1) * perPage + index + 1}</td>
+                <td>{item.title}</td>
+                <td>{item.author}</td>
+                <td>
+                    <Button variant="primary" onClick={() => handleEditData(index)}>Edit</Button>
+                    &nbsp;
+                    <Button variant="danger" onClick={() => handleDeleteData(item.id!)}>Delete</Button>
+                </td>
+            </tr>
         ))
     ), [tableData, currentPage, perPage])
 

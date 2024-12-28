@@ -34,6 +34,8 @@
         "react": "^19.0.0",
         "react-bootstrap": "^2.10.7",
         "react-dom": "^19.0.0",
+        "sweetalert2": "^11.15.3",
+        "sweetalert2-react-content": "^5.1.0",
         "typed.js": "^2.0.12",
         "typescript": "^5.7.2",
         "yup": "^1.6.1"

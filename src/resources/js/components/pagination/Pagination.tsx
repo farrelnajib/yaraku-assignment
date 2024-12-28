@@ -73,11 +73,11 @@ const PaginationComponent: React.FC<PaginationProps> = ({currentPage, totalPages
 
     return (
         <Pagination>
-            <Pagination.First onClick={() => handlePageClick(1)} />
+            <Pagination.First onClick={() => handlePageClick(1)} disabled={currentPage == 1} />
             <Pagination.Prev onClick={() => handlePageClick(currentPage - 1)} disabled={currentPage == 1} />
             {pages}
             <Pagination.Next onClick={() => handlePageClick(currentPage + 1)} disabled={currentPage == totalPages} />
-            <Pagination.Last onClick={() => handlePageClick(totalPages)} />
+            <Pagination.Last onClick={() => handlePageClick(totalPages)} disabled={currentPage == totalPages} />
         </Pagination>
     )
 };
