@@ -1,77 +1,66 @@
-import {Button, Card, Col, Form, Row} from "react-bootstrap";
-import React from "react";
-import * as formik from "formik";
-import * as yup from "yup";
-import {FormikHelpers, FormikValues} from "formik";
-import {FormValues} from "../types";
+import {Button, Card, Col, Form, Row, Stack} from "react-bootstrap";
+import React, {JSX} from "react";
+import {useFormTable} from "../contexts/FormTableContext";
 
-export default function FormComponent() {
-    const {Formik} = formik;
-    const schema = yup.object().shape({
-        title: yup.string().required(),
-        author: yup.string().required()
-    });
+/**
+ * A form group to create or edit book
+ *
+ * @returns {JSX.Element} The search and pagination element for books table
+ */
+export default function FormComponent(): JSX.Element {
+    const {
+        formData,
+        handleSubmitForm,
+        handleInputChange,
+        handleResetForm,
+        submitFormError,
+    } = useFormTable();
 
-    const handleSubmit = (
-        values: FormikValues,
-        {setSubmitting}: FormikHelpers<FormValues>,
-    ) => {
-        console.log(values)
-        setSubmitting(false)
-    }
+    const isEmpty: boolean = formData.title == "" || formData.author == "";
 
     return (
         <Row className="mb-3">
             <Col>
                 <Card>
                     <Card.Body>
-                        <Formik
-                            onSubmit={handleSubmit}
-                            validateOnBlur={true}
-                            initialValues={{
-                                title: '',
-                                author: '',
-                            }}
-                            validationSchema={schema}
-                        >
-                            {({handleSubmit, handleChange, values, touched, errors}) => (
-                                <Form noValidate onSubmit={handleSubmit}>
-                                    <Row>
-                                        <Form.Group className="mb-3" controlId="title" as={Col}>
-                                            <Form.Label>Title</Form.Label>
-                                            <Form.Control
-                                                type="text"
-                                                placeholder="Lorem ipsum dolor sit amet"
-                                                name="title"
-                                                value={values.title}
-                                                onChange={handleChange}
-                                                isValid={touched.title && !errors.title}
-                                            />
-                                            <Form.Control.Feedback type="invalid">{errors.title}</Form.Control.Feedback>
-                                        </Form.Group>
-                                    </Row>
-                                    <Row>
-                                        <Form.Group className="mb-3" controlId="author" as={Col}>
-                                            <Form.Label>Author</Form.Label>
-                                            <Form.Control
-                                                type="text"
-                                                placeholder="John Doe"
-                                                name="author"
-                                                value={values.author}
-                                                onChange={handleChange}
-                                                isValid={touched.author && !errors.author}
-                                            />
-                                            <Form.Control.Feedback type="invalid">{errors.author}</Form.Control.Feedback>
-                                        </Form.Group>
-                                    </Row>
-                                    <Row>
-                                        <Col>
-                                            <Button type="submit">Submit</Button>
-                                        </Col>
-                                    </Row>
-                                </Form>
-                            )}
-                        </Formik>
+                        <Form noValidate onSubmit={handleSubmitForm}>
+                            <Row>
+                                <Form.Group className="mb-3" controlId="title" as={Col}>
+                                    <Form.Label>Title</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        placeholder="Lorem ipsum dolor sit amet"
+                                        name="title"
+                                        value={formData.title}
+                                        onChange={handleInputChange}
+                                        isInvalid={!!submitFormError?.errors?.title}
+                                    />
+                                    <Form.Control.Feedback type="invalid">{submitFormError?.errors?.title?.[0]}</Form.Control.Feedback>
+                                </Form.Group>
+                            </Row>
+                            <Row>
+                                <Form.Group className="mb-3" controlId="author" as={Col}>
+                                    <Form.Label>Author</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        placeholder="John Doe"
+                                        name="author"
+                                        value={formData.author}
+                                        onChange={handleInputChange}
+                                        isInvalid={!!submitFormError?.errors?.author}
+                                    />
+                                    <Form.Control.Feedback type="invalid">{submitFormError?.errors?.author?.[0]}</Form.Control.Feedback>
+                                </Form.Group>
+                            </Row>
+                            <Row>
+                                <Col>
+                                    <Stack direction="horizontal" gap={2}>
+                                        <Button type="submit" disabled={isEmpty}>Submit</Button>
+                                        <Button type="reset" variant="secondary" onClick={handleResetForm}>Reset</Button>
+                                    </Stack>
+                                </Col>
+                            </Row>
+                        </Form>
                     </Card.Body>
                 </Card>
             </Col>

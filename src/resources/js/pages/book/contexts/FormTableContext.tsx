@@ -1,7 +1,9 @@
-import React, {ChangeEvent, createContext, JSX, useContext, useEffect, useMemo, useState} from "react";
+import React, {ChangeEvent, createContext, JSX, useCallback, useContext, useEffect, useMemo, useState} from "react";
 import {FormTableContextType, FormData} from "../types";
-import axios from "axios";
+import axios, {AxiosResponse} from "axios";
 import debounce from "lodash.debounce";
+import {handleAPIError} from "../../../helpers/errors";
+import {APIErrors, ValidationErrors} from "../../../helpers/types";
 
 /**
  * FormTableContext provides state and methods for managing table and form interactions.
@@ -17,7 +19,7 @@ export const useFormTable: () => FormTableContextType = (): FormTableContextType
 }
 
 /**
- * Fetches table data from the API based on the given parameters.
+ * Get list books from the API based on the given parameters.
  *
  * @param {Object} params - The parameters for the API call.
  * @param {string} params.searchTerm - The search term for filtering data.
@@ -27,7 +29,7 @@ export const useFormTable: () => FormTableContextType = (): FormTableContextType
  * @param {number} params.perPage - The number of items per page.
  * @returns {Promise<{ data: FormData[]; lastPage: number }>} The fetched table data and total pages.
  */
-const fetchTableData = async ({ searchTerm, sortField, sortDirection, currentPage, perPage }: {
+const getListBooks = async ({ searchTerm, sortField, sortDirection, currentPage, perPage }: {
     searchTerm: string;
     sortField: keyof FormData | null;
     sortDirection: 'asc' | 'desc';
@@ -48,14 +50,31 @@ const fetchTableData = async ({ searchTerm, sortField, sortDirection, currentPag
 };
 
 /**
+ * Send form data to the API.
+ *
+ * @param {FormData} formData
+ * @returns {Promise<AxiosResponse>} The raw API response.
+ *
+ */
+const createBook = async (formData: FormData): Promise<AxiosResponse> => {
+    let url = "/api/books";
+    if (formData.id) {
+        url += `/${formData.id}`;
+    }
+
+    return await axios.post(url, formData);
+}
+
+/**
  * Context provider from FormTableContext.
  *
  * @param {React.PropsWithChildren} children - The children components.
  * @returns {JSX.Element} The context provider.
  */
 export const FormTableProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }: React.PropsWithChildren): JSX.Element => {
-    const [formData] = useState<FormData | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    // Form related states
+    const [formData, setFormData] = useState<FormData>({title: "", author: ""});
+    const [submitFormError, setSubmitFormError] = useState<APIErrors | null>(null);
 
     // Sort related states
     const [sortField, setSortField] = useState<keyof FormData | null>(null);
@@ -69,28 +88,56 @@ export const FormTableProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
     const [tableData, setTableData] = useState<FormData[]>([]);
     const [totalPages, setTotalPages] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
+    const [fetchTableDataError, setFetchTableDataError] = useState<string | null>(null);
 
-    const handleSort = (column: keyof FormData) => {
+    const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData({...formData, [name]: value});
+
+        if (submitFormError) {
+            setSubmitFormError(null);
+        }
+    }, [formData]);
+
+    const handleResetForm = useCallback(() => {
+        setFormData({title: "", author: ""});
+        setSubmitFormError(null);
+    }, []);
+
+    const handleSubmitForm = useCallback((e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        createBook(formData)
+            .then(() => {
+                handleResetForm();
+                fetchTableData();
+            })
+            .catch(error => {
+                const apiErr = handleAPIError(error);
+                setSubmitFormError(apiErr);
+            })
+    }, [formData])
+
+    const handleSort = useCallback((column: keyof FormData) => {
         setSortDirection((sortField == null) ? "asc" : (sortDirection == "asc" ? "desc" : "asc"));
         setSortField(column);
-    };
+    }, [sortField, sortDirection]);
 
-    const handlePageClick = (page: number) => {
+    const handlePageClick = useCallback((page: number) => {
         if (page !== currentPage) {
             setCurrentPage(page);
         }
-    }
+    }, [currentPage])
 
-    const handlePerPageChange = (perPage: number) => {
+    const handlePerPageChange = useCallback((perPage: number) => {
         setPerPage(perPage);
         setCurrentPage(1);
-    }
+    }, [perPage])
 
-    const handleSearchInput = (e: ChangeEvent<HTMLInputElement>) => {
+    const handleSearchInput = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearchTerm(value);
         debouncedSearch(value);
-    };
+    }, [searchTerm]);
 
     const debouncedSearch = useMemo(
         () =>
@@ -101,10 +148,10 @@ export const FormTableProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
         []
     );
 
-    useEffect(() => {
+    const fetchTableData = useCallback(() => {
         setIsLoading(true);
-        setError(null);
-        fetchTableData({
+        setFetchTableDataError(null);
+        getListBooks({
             searchTerm: debouncedSearchTerm,
             sortField,
             sortDirection,
@@ -113,20 +160,26 @@ export const FormTableProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
         }).then(data => {
             setTableData(data.data);
             setTotalPages(data.lastPage);
-        }).catch(err => {
-            console.log(err);
-            setError("Failed to load table data. Please try again.");
+        }).catch(error => {
+            const apiError = handleAPIError(error);
+            setFetchTableDataError(apiError.message);
         }).finally(() => {
             setIsLoading(false);
-
         })
     }, [perPage, debouncedSearchTerm, currentPage, sortField, sortDirection]);
 
+    useEffect(() => {
+        fetchTableData();
+    }, [fetchTableData, perPage, debouncedSearchTerm, currentPage, sortField, sortDirection]);
+
     return (
         <FormTableContext.Provider value={{
+            // Form related context
             formData,
-            isLoading,
-            error,
+            submitFormError,
+            handleInputChange,
+            handleSubmitForm,
+            handleResetForm,
 
             // Search related context
             searchTerm,
@@ -146,6 +199,8 @@ export const FormTableProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
             // Table response related context
             tableData,
             totalPages,
+            fetchTableDataError,
+            isLoading,
         }}>
             {children}
         </FormTableContext.Provider>

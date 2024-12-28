@@ -1,9 +1,5 @@
-import {ChangeEvent} from "react";
-
-export interface FormValues {
-    title: string;
-    author: string;
-}
+import React, {ChangeEvent} from "react";
+import {APIErrors} from "../../helpers/types";
 
 export interface FormData {
     id?: number;
@@ -15,9 +11,12 @@ export interface FormData {
  * Props for FormTableContext
  */
 export interface FormTableContextType {
-    formData: FormData | null;
-    isLoading: boolean;
-    error: string | null;
+    // Form related context
+    formData: FormData;
+    submitFormError: APIErrors | null;
+    handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleSubmitForm: (e: React.FormEvent<HTMLFormElement>) => void;
+    handleResetForm: () => void;
 
     // Search related context
     searchTerm: string;
@@ -37,4 +36,6 @@ export interface FormTableContextType {
     // Table response related context
     tableData: FormData[];
     totalPages: number;
+    isLoading: boolean;
+    fetchTableDataError: string | null;
 }

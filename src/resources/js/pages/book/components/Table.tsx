@@ -86,7 +86,7 @@ const LoadingIndicator = ({ colSpan }: { colSpan: number }): JSX.Element => (
 export default function TableComponent() {
     const {
         isLoading,
-        error,
+        fetchTableDataError,
         sortField,
         sortDirection,
         tableData,
@@ -113,7 +113,7 @@ export default function TableComponent() {
     return (
         <Row>
             <Col>
-                {error && <div className="alert alert-danger">{error}</div>}
+                {fetchTableDataError && <div className="alert alert-danger">{fetchTableDataError}</div>}
                 <Row>
                     <Col>
                         <Table striped>
