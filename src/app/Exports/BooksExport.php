@@ -2,12 +2,9 @@
 
 namespace App\Exports;
 
-use App\Book;
 use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class BooksExport implements FromCollection, WithHeadings
+class BooksExport
 {
     private Collection $data;
     private array $fields;
@@ -18,19 +15,44 @@ class BooksExport implements FromCollection, WithHeadings
         $this->fields = $fields;
     }
 
-    /**
-    * @return Collection
-    */
-    public function collection(): Collection
+    public static function makeCsv(Collection $data, array $fields): string
     {
-        return $this->data;
+        $exporter = new static($data, $fields);
+        return $exporter->toCsv();
     }
 
-    /**
-     * @return array
-     */
-    public function headings(): array
+    public function toCsv(): string
     {
-        return $this->fields;
+        // Initialize output buffer
+        $output = fopen('php://temp', 'r+');
+        if ($output === false) {
+            throw new \RuntimeException('Unable to create temporary memory stream.');
+        }
+
+        // Write the headers to the CSV
+        fputcsv($output, $this->fields);
+
+        // Write each row of data
+        foreach ($this->data as $row) {
+            $rowArray = [];
+            foreach ($this->fields as $field) {
+                $rowArray[] = (string)$row->$field; // Dynamically add selected columns
+            }
+            fputcsv($output, $rowArray);
+        }
+
+        // Move back to the beginning of the buffer
+        rewind($output);
+
+        // Get the CSV as a string
+        $csvString = stream_get_contents($output);
+        if ($csvString === false) {
+            throw new \RuntimeException('Unable to read from memory stream.');
+        }
+
+        // Close the buffer
+        fclose($output);
+
+        return $csvString;
     }
 }

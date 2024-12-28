@@ -9,9 +9,7 @@ use App\Http\DTO\Requests\ListBooksInput;
 use App\Http\DTO\Responses\ExportResponse;
 use App\Http\DTO\Responses\Pagination;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Maatwebsite\Excel\Facades\Excel;
 use Spatie\ArrayToXml\ArrayToXml;
-use Maatwebsite\Excel\Excel as ExcelType;
 
 class BookService
 {
@@ -77,7 +75,7 @@ class BookService
     public function exportToCsv(ListBooksInput $input, array $fields): ExportResponse
     {
         $books = Book::filter($input)->get($fields);
-        $resData = Excel::raw(new BooksExport($books, $fields), ExcelType::CSV);
+        $resData = BooksExport::makeCsv($books, $fields);
         return new ExportResponse($resData, "books-" . now() . ".csv", "text/csv");
     }
 
