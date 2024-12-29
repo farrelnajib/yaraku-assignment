@@ -1,11 +1,31 @@
 import React, {ChangeEvent, createContext, JSX, useCallback, useContext, useEffect, useMemo, useState} from "react";
-import {FormTableContextType, FormData} from "../types";
+import {FormTableContextType, FormData, ExportJob} from "../types";
 import debounce from "lodash.debounce";
 import {handleAPIError} from "../../../helpers/errors";
 import {APIErrors} from "../../../helpers/types";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-import {deleteBook, getListBooks, upsertBook} from "./services";
+import {deleteBook, getListBooks, upsertBook, exportBooks, getExportById} from "../services";
+import mqtt from "mqtt";
+
+const mqttHost = process.env.MIX_MQTT_HOST ?? 'localhost';
+const mqttPort = process.env.MIX_MQTT_PORT ?? '9001';
+
+const client = mqtt.connect(`ws://${mqttHost}:${mqttPort}`, {
+    reconnectPeriod: 1000,
+    connectTimeout: 5000,
+    keepalive: 30,
+});
+
+client.on('message', (topic, message) => {
+    const parsed: ExportJob = JSON.parse(message.toString());
+    if (parsed.status !== "FINISHED") {
+        return;
+    }
+
+    window.open(parsed.downloadUrl)
+    client.unsubscribe(topic);
+});
 
 /**
  * FormTableContext provides state and methods for managing table and form interactions.
@@ -30,6 +50,7 @@ export const FormTableProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
     // Form related states
     const [formData, setFormData] = useState<FormData>({title: "", author: ""});
     const [submitFormError, setSubmitFormError] = useState<APIErrors | null>(null);
+    const [exportError, setExportError] = useState<string | null>(null);
 
     // Sort related states
     const [sortField, setSortField] = useState<keyof FormData | null>(null);
@@ -153,25 +174,49 @@ export const FormTableProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
             });
     }, [fetchTableData])
 
-    const handleExport = useCallback(({type, fields}: {type: 'csv' | 'xml'; fields: string[]}) => {
-        const params = new URLSearchParams();
-        params.append('type', type);
-        fields.forEach(field => params.append('fields[]', field));
 
-        const queryString = params.toString();
-        const url = `/api/books/export?${queryString}`
-        window.open(url, "_blank");
+    const handleListenExport = useCallback((exportJob: ExportJob) => {
+        getExportById(exportJob.id)
+            .then(res => {
+                if (res.data.status == "FINISHED") {
+                    window.open(res.data.downloadUrl, "_blank");
+                    return;
+                }
+
+                client.subscribe(`export/${exportJob.id}`, {qos: 2});
+            })
+            .catch(err => {
+                const apiErr = handleAPIError(err)
+                setExportError(apiErr.message);
+            })
+    }, [])
+
+    const handleExport = useCallback(({type, fields}: {type: 'csv' | 'xml'; fields: string[]}) => {
+        exportBooks({type, fields})
+            .then(res => {
+                console.log(res.data)
+                handleListenExport(res.data);
+            })
+            .catch(err => {
+                const apiErr = handleAPIError(err)
+                setExportError(apiErr.message);
+            })
     }, [])
 
     useEffect(() => {
         fetchTableData();
     }, [fetchTableData, perPage, debouncedSearchTerm, currentPage, sortField, sortDirection]);
 
+    useEffect(() => {
+        document.title = "Book"
+    }, []);
+
     return (
         <FormTableContext.Provider value={{
             // Form related context
             formData,
             submitFormError,
+            exportError,
             handleInputChange,
             handleSubmitForm,
             handleResetForm,

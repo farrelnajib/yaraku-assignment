@@ -34,6 +34,7 @@
         "debounce": "^2.2.0",
         "formik": "^2.4.6",
         "lodash.debounce": "^4.0.8",
+        "mqtt": "^5.10.3",
         "react": "^19.0.0",
         "react-bootstrap": "^2.10.7",
         "react-dom": "^19.0.0",

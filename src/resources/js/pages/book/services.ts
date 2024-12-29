@@ -1,5 +1,5 @@
 import axios, {AxiosResponse} from "axios";
-import {FormData} from "../types";
+import {ExportJob, FormData} from "./types";
 
 /**
  * Get list books from the API based on the given parameters.
@@ -19,7 +19,7 @@ export const getListBooks = async ({ searchTerm, sortField, sortDirection, curre
     currentPage: number;
     perPage: number;
 }): Promise<{ data: FormData[]; lastPage: number; }> => {
-    const response = await axios.get("/api/books", {
+    const response = await axios.get("/api/v1/books", {
         params: {
             search_text: searchTerm,
             sort_field: sortField,
@@ -33,15 +33,15 @@ export const getListBooks = async ({ searchTerm, sortField, sortDirection, curre
 };
 
 /**
- * Send POST book data to `/api/books/` for create or
- * PUT to `/api/books/{id}` for update
+ * Send POST book data to `/api/v1/books/` for create or
+ * PUT to `/api/v1/books/{id}` for update
  *
  * @param {FormData} data
  * @returns {Promise<AxiosResponse>} - The raw API response.
  *
  */
 export const upsertBook = async (data: FormData): Promise<AxiosResponse> => {
-    let url = "/api/books";
+    let url = "/api/v1/books";
     let method = "post";
     if (data.id) {
         url += `/${data.id}`;
@@ -52,12 +52,29 @@ export const upsertBook = async (data: FormData): Promise<AxiosResponse> => {
 }
 
 /**
- * Send DELETE request to `/api/books/{id}`
+ * Send DELETE request to `/api/v1/books/{id}`
  *
  * @param {number} id - ID of the book that want to be deleted.
  * @returns {Promise<AxiosResponse>} The raw API response.
  *
  */
 export const deleteBook = async (id: number): Promise<AxiosResponse> => {
-    return await axios.delete(`/api/books/${id}`);
+    return await axios.delete(`/api/v1/books/${id}`);
+}
+
+export const exportBooks = async ({type, fields}: {
+    type: 'csv' | 'xml';
+    fields: string[];
+}): Promise<{ data: ExportJob; }> => {
+    const response = await axios.post(`api/v1/books/export`, {
+        type,
+        fields,
+    })
+
+    return response.data;
+}
+
+export const getExportById = async (id: number): Promise<{ data: ExportJob; }> => {
+    const response = await axios.get(`api/v1/books/export/${id}`);
+    return response.data;
 }

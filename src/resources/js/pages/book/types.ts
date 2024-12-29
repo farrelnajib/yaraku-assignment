@@ -7,6 +7,13 @@ export interface FormData {
     author: string;
 }
 
+export interface ExportJob {
+    id: number;
+    status: string;
+    type: string;
+    downloadUrl: string;
+}
+
 /**
  * Props for FormTableContext
  */
@@ -14,6 +21,7 @@ export interface FormTableContextType {
     // Form related context
     formData: FormData;
     submitFormError: APIErrors | null;
+    exportError: string | null;
     handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     handleSubmitForm: (e: React.FormEvent<HTMLFormElement>) => void;
     handleResetForm: () => void;

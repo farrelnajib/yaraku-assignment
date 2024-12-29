@@ -5,9 +5,15 @@ import {faDownload} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {useFormTable} from "../contexts/FormTableContext";
 
+/**
+ * A form group to export books data
+ *
+ * @returns {JSX.Element} The export form component
+ */
 export default function Export(): JSX.Element {
     const {
         handleExport,
+        exportError,
     } = useFormTable();
 
     const [type, setExportType] = useState<'csv' | 'xml'>('csv');
@@ -31,6 +37,7 @@ export default function Export(): JSX.Element {
     return (
         <Card className="h-100">
             <Card.Body>
+                {exportError && <div className="alert alert-danger">{exportError}</div>}
                 <Row>
                     <Form.Group className="mb-3" as={Col} controlId="type">
                         <Form.Label>Export Type</Form.Label>

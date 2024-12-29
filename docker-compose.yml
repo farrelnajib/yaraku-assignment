@@ -5,6 +5,7 @@ services:
     build:
       context: .
     container_name: $COMPOSE_PROJECT_NAME-laravel
+    restart: unless-stopped
     environment:
       DB_DATABASE: laravel
       DB_HOST: mysql
@@ -14,14 +15,64 @@ services:
       APP_ENV: local
       APP_KEY: ayGbuqVXJakHHvMTZCjKqzhVqMNsHMQs
       LOG_CHANNEL: stderr
+      QUEUE_CONNECTION: database
+      MQTT_HOST: mqtt
+      MQTT_PORT: 1883
+      MIX_MQTT_HOST: mqtt
+      MIX_MQTT_PORT: 9001
     depends_on:
       mysql:
         condition: service_healthy
+      mqtt:
+        condition: service_started
     ports:
       - '80:80'
     volumes:
-      - ./src:/var/www/html
-    command: sh -c "php artisan migrate --force && apache2-foreground"
+      - laravel:/var/www/html/storage/app
+    command: sh -c "php artisan migrate && apache2-foreground"
+    networks:
+      - app
+
+  queue-worker:
+    build:
+      context: .
+    container_name: worker
+    environment:
+      DB_DATABASE: laravel
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_PASSWORD: secret
+      DB_USERNAME: laravel
+      APP_DEBUG: 'false'
+      APP_ENV: local
+      APP_KEY: ayGbuqVXJakHHvMTZCjKqzhVqMNsHMQs
+      QUEUE_CONNECTION: database
+      MQTT_HOST: mqtt
+      MQTT_PORT: 1883
+      MIX_MQTT_HOST: mqtt
+      MIX_MQTT_PORT: 1883
+    depends_on:
+      laravel:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+      mqtt:
+        condition: service_started
+    command: php artisan queue:work --verbose --tries=3 --timeout=90
+    volumes:
+      - laravel:/var/www/html/storage/app
+    networks:
+      - app
+
+  mqtt:
+    image: "eclipse-mosquitto"
+    container_name: "mosquitto"
+    restart: unless-stopped
+    ports:
+      - 1883:1883
+      - 9001:9001
+    volumes:
+      - ./mosquitto:/mosquitto/config/
     networks:
       - app
 
@@ -45,3 +96,7 @@ services:
 networks:
   app:
     driver: bridge
+
+volumes:
+  laravel:
+    driver: local

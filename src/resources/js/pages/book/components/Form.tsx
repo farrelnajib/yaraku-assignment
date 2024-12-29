@@ -7,7 +7,7 @@ import {faFloppyDisk} from "@fortawesome/free-solid-svg-icons";
 /**
  * A form group to create or edit book
  *
- * @returns {JSX.Element} The search and pagination element for books table
+ * @returns {JSX.Element} The form component
  */
 export default function FormComponent(): JSX.Element {
     const {

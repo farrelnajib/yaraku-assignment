@@ -3,13 +3,13 @@
 namespace App\Http\Services;
 
 use App\Book;
-use App\Exports\BooksExport;
+use App\ExportJob;
 use App\Http\DTO\Book as BookDTO;
+use App\Http\DTO\Export;
 use App\Http\DTO\Requests\ListBooksInput;
-use App\Http\DTO\Responses\ExportResponse;
 use App\Http\DTO\Responses\Pagination;
+use App\Jobs\ExportJobProcessor;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Spatie\ArrayToXml\ArrayToXml;
 
 class BookService
 {
@@ -65,34 +65,36 @@ class BookService
         $bookDB->delete();
     }
 
+
     /**
-     * Business logic to export all books to csv with filter and sort (pagination ignored)
+     * Business logic to handle export. This function will create a job, dispatch a queue, and
+     * `ExportJobProcessor` will handle the export process in the background
      *
-     * @param ListBooksInput $input
-     * @param array $fields
-     * @return ExportResponse
+     * @param string $type Type of import, can be "csv" or "xml"
+     * @param array $fields Fields that want to be imported, can contains "title" or "author"
+     * @return Export The job object
      */
-    public function exportToCsv(ListBooksInput $input, array $fields): ExportResponse
+    public function export(string $type = 'csv', array $fields = ["title", "author"]): Export
     {
-        $books = Book::filter($input)->get($fields);
-        $resData = BooksExport::makeCsv($books, $fields);
-        return new ExportResponse($resData, "books-" . now() . ".csv", "text/csv");
+        $exportJob = new ExportJob();
+        $exportJob->status = "PENDING";
+        $exportJob->type = $type;
+        $exportJob->fields = $fields;
+        $exportJob->save();
+
+        dispatch(new ExportJobProcessor($exportJob));
+
+        return Export::fromModel($exportJob);
     }
 
     /**
-     * Business logic to export all books to xml with filter and sort (pagination ignored)
+     * Get an export job by id
      *
-     * @param ListBooksInput $input
-     * @param array $fields
-     * @return ExportResponse
+     * @param string $id
+     * @return Export
      */
-    public function exportToXml(ListBooksInput $input, array $fields): ExportResponse
-    {
-        $books = Book::filter($input)->get($fields);
-        $arr = [
-            "books" => $books->toArray()
-        ];
-        $resData = ArrayToXml::convert($arr, 'books');
-        return new ExportResponse($resData, "books-" . now() . ".xml", "text/xml");
+    public function getExportJobById(string $id): Export {
+        $exportDB = ExportJob::findOrFail($id);
+        return Export::fromModel($exportDB);
     }
 }

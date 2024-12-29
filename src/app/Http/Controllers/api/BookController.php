@@ -4,14 +4,12 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Http\DTO\Requests\ListBooksInput;
-use App\Http\DTO\Responses\ExportResponse;
 use App\Http\DTO\Responses\Response as ResponseDTO;
 use App\Http\Requests\StoreBook;
 use App\Http\Services\BookService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class BookController extends Controller
@@ -87,21 +85,31 @@ class BookController extends Controller
      * Returns 400 if `type` query is neither `csv` nor `xml`
      *
      * @param Request $request
-     * @return Response
+     * @return JsonResponse
      */
-    public function export(Request $request): Response
+    public function export(Request $request): JsonResponse
     {
-        $type = $request->query("type");
-        $fields = $request->query("fields", ["title", "author"]);
-        switch ($type) {
-            case 'csv':
-                $csvRes = $this->bookService->exportToCsv(ListBooksInput::fromRequest($request), $fields);
-                return $csvRes->toResponse();
-            case 'xml':
-                $xmlRes = $this->bookService->exportToXml(ListBooksInput::fromRequest($request), $fields);
-                return $xmlRes->toResponse();
-            default:
-                return Response::create(["message" => "Invalid type"], 400, ["Content-Type" => "application/json"]);
+        $type = $request->json("type", 'csv');
+        $fields = $request->json("fields", ["title", "author"]);
+        if (!in_array($type, ['csv', 'xml'])) {
+            return response()->json(['message' => 'Type must be CSV or XML'], 400);
+        }
+
+        if (sizeof($fields) === 0) {
+            $fields = ['title', 'author'];
+        }
+
+        $export = $this->bookService->export($type, $fields);
+        return response()->json(new ResponseDTO($export));
+    }
+
+    public function getExportJobById(int $id): JsonResponse
+    {
+        try {
+            $export = $this->bookService->getExportJobById($id);
+            return response()->json(new ResponseDTO($export), 200);
+        } catch (ModelNotFoundException $exception) {
+            return response()->json(['message' => 'Export job not found'], 404);
         }
     }
 }
