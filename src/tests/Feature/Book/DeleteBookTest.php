@@ -23,7 +23,7 @@ class DeleteBookTest extends TestCase
     }
 
     /**
-     * Test if DELETE `/api/books/{id}` returned the same status code specified in the test suites
+     * Test if DELETE `/api/v1/books/{id}` returned the same status code specified in the test suites
      *
      * @return void
      */
@@ -42,7 +42,7 @@ class DeleteBookTest extends TestCase
 
         $this->seedBook();
         foreach ($testSuites as $testSuite) {
-            $response = $this->delete("/api/books/" . $testSuite["id"], [], $this->defaultHeaders);
+            $response = $this->delete("/api/v1/books/" . $testSuite["id"], [], $this->defaultHeaders);
             $response->assertStatus($testSuite["code"]);
         }
     }

@@ -14,7 +14,7 @@ class CreateBookTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Test if POST `/api/books` returned 201 with valid object returned
+     * Test if POST `/api/v1/books` returned 201 with valid object returned
      *
      * @return void
      */
@@ -25,12 +25,12 @@ class CreateBookTest extends TestCase
             "author" => "Author 1",
         ];
 
-        $response = $this->post("/api/books", $bookData, $this->defaultHeaders);
+        $response = $this->post("/api/v1/books", $bookData, $this->defaultHeaders);
         $response->assertStatus(201)->assertJson(["data" => $bookData]);
     }
 
     /**
-     * Test if POST `/api/books` returned 422 when title does not exist
+     * Test if POST `/api/v1/books` returned 422 when title does not exist
      *
      * @return void
      */
@@ -40,12 +40,12 @@ class CreateBookTest extends TestCase
             "author" => "Author 1",
         ];
 
-        $response = $this->post("/api/books", $bookData, $this->defaultHeaders);
+        $response = $this->post("/api/v1/books", $bookData, $this->defaultHeaders);
         $response->assertStatus(422)->assertJsonValidationErrors(["title"]);
     }
 
     /**
-     * Test if POST `/api/books` returned 422 when author does not exist
+     * Test if POST `/api/v1/books` returned 422 when author does not exist
      *
      * @return void
      */
@@ -55,12 +55,12 @@ class CreateBookTest extends TestCase
             "title" => "Title 1",
         ];
 
-        $response = $this->post("/api/books", $bookData, $this->defaultHeaders);
+        $response = $this->post("/api/v1/books", $bookData, $this->defaultHeaders);
         $response->assertStatus(422)->assertJsonValidationErrors(["author"]);
     }
 
     /**
-     * Test if POST `/api/books` returned 422 when title and author does not exist
+     * Test if POST `/api/v1/books` returned 422 when title and author does not exist
      *
      * @return void
      */
@@ -68,7 +68,7 @@ class CreateBookTest extends TestCase
     {
         $bookData = [];
 
-        $response = $this->post("/api/books", $bookData, $this->defaultHeaders);
+        $response = $this->post("/api/v1/books", $bookData, $this->defaultHeaders);
         $response->assertStatus(422)->assertJsonValidationErrors(["title", "author"]);
     }
 }

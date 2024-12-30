@@ -31,7 +31,7 @@ class ExportBooksTest extends TestCase
     }
 
     /**
-     * Test if GET `/api/books/export` returns the same status code and content type as specified in the test suites
+     * Test if GET `/api/v1/books/export` returns the same status code and content type as specified in the test suites
      *
      * @return void
      */
@@ -39,40 +39,45 @@ class ExportBooksTest extends TestCase
     {
         $testSuites = [
             [
-                "query" => [],
-                "status" => 400,
-                "contentType" => "application/json",
+                // Default to CSV
+                "body" => [],
+                "status" => 200,
+                "type" => "csv",
             ],
             [
-                "query" => [
+                "body" => [
                     "type" => "nonExistentType"
                 ],
                 "status" => 400,
-                "contentType" => "application/json",
             ],
             [
-                "query" => [
+                "body" => [
                     "type" => "csv"
                 ],
                 "status" => 200,
-                "contentType" => "text/csv; charset=UTF-8",
+                "type" => "csv",
             ],
             [
-                "query" => [
+                "body" => [
                     "type" => "xml"
                 ],
                 "status" => 200,
-                "contentType" => "text/xml; charset=UTF-8",
+                "type" => "xml",
             ]
         ];
 
         $this->seedBooks(10);
 
         foreach ($testSuites as $testSuite) {
-            $url = '/api/books/export?' . Arr::query($testSuite["query"]);
-            $response = $this->get($url, $this->defaultHeaders);
+            $url = '/api/v1/books/export';
+            $response = $this->postJson($url, $testSuite["body"], $this->defaultHeaders);
             $response->assertStatus($testSuite["status"]);
-            $response->assertHeader("Content-Type", $testSuite["contentType"]);
+
+            if ($testSuite["status"] === 200) {
+                $response->assertJson(["data" => [
+                    "type" => $testSuite["type"],
+                ]]);
+            }
         }
     }
 }

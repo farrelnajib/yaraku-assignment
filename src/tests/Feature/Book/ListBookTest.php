@@ -30,7 +30,7 @@ class ListBookTest extends TestCase
     }
 
     /**
-     * Test if GET `/api/books` without any params will return 15 items.
+     * Test if GET `/api/v1/books` without any params will return 15 items.
      * Default per_page is 15
      *
      * @return void
@@ -38,13 +38,13 @@ class ListBookTest extends TestCase
     public function testDefaultPagination()
     {
         $this->seedBooks();
-        $response = $this->get('/api/books', $this->defaultHeaders);
+        $response = $this->get('/api/v1/books', $this->defaultHeaders);
         $response->assertStatus(200);
         $response->assertJsonCount(15, 'data');
     }
 
     /**
-     * Test if GET `/api/books` with `per_page` parameter will return the exact number of data
+     * Test if GET `/api/v1/books` with `per_page` parameter will return the exact number of data
      *
      *
      * @return void
@@ -54,7 +54,7 @@ class ListBookTest extends TestCase
         $this->seedBooks();
         for ($i = 1; $i <= 10; $i++) {
             $perPage = rand(1, 100);
-            $response = $this->get('/api/books?per_page=' . $perPage, $this->defaultHeaders);
+            $response = $this->get('/api/v1/books?per_page=' . $perPage, $this->defaultHeaders);
             $response->assertStatus(200);
             $response->assertJsonCount($perPage, 'data');
         }

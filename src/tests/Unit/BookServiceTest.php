@@ -4,8 +4,9 @@ namespace Tests\Unit;
 
 //use PHPUnit\Framework\TestCase;
 use App\Book;
+use App\ExportJob;
 use App\Http\DTO\Requests\ListBooksInput;
-use App\Http\Services\BookService;
+use App\Services\BookService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -178,26 +179,55 @@ class BookServiceTest extends TestCase
     }
 
     /**
-     * Test if `exportCsv` returns `ExportResponse` with `contentType` equals `text/csv`
+     * Test if `export` method returns `Export` DTO which contains the export job specs.
      *
      * @return void
      */
-    public function testCsvExportedSuccessfully()
+    public function testExportJobCreatedSuccessfully()
     {
+        $testSuites = ['csv', 'xml'];
         $this->seedBooks(10);
-        $res = $this->bookService->exportToCsv(new ListBooksInput(null, null, null, null), ["title", "author"]);
-        $this->assertEquals("text/csv", $res->contentType);
+
+        foreach ($testSuites as $testSuite) {
+            $res = $this->bookService->export($testSuite);
+            $this->assertEquals($testSuite, $res->type);
+        }
     }
 
     /**
-     * Test if `exportXml` returns `ExportResponse` with `contentType` equals `text/xml`
+     * Test if `getExportJobById` method returns `Export` DTO,
+     * and throws `ModelNotFoundException` if not found
      *
      * @return void
      */
-    public function testXmlExportedSuccessfully()
+    public function testGetExportJobById()
     {
-        $this->seedBooks(10);
-        $res = $this->bookService->exportToXml(new ListBooksInput(null, null, null, null), ["title", "author"]);
-        $this->assertEquals("text/xml", $res->contentType);
+        ExportJob::create([
+            "id" => 1,
+            "status" => "PENDING",
+            "type" => "csv",
+            "fields" => ["title", "author"],
+        ]);
+
+        $testSuites = [
+            [
+                "id" => 1,
+                "exception" => null,
+            ],
+            [
+                "id" => 2,
+                "exception" => ModelNotFoundException::class,
+            ]
+        ];
+
+        foreach ($testSuites as $testSuite) {
+            if ($testSuite["exception"] !== null) {
+                $this->expectException($testSuite["exception"]);
+            }
+            $res = $this->bookService->getExportJobById($testSuite["id"]);
+            if ($testSuite["exception"] == null) {
+                $this->assertNotNull($res);
+            }
+        }
     }
 }
