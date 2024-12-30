@@ -1,17 +1,16 @@
 import React, {ChangeEvent, createContext, JSX, useCallback, useContext, useEffect, useMemo, useState} from "react";
-import {FormTableContextType, FormData, ExportJob} from "../types";
+import {ExportJob, ExportStatus, FormData, FormTableContextType} from "../types";
 import debounce from "lodash.debounce";
 import {handleAPIError} from "../../../helpers/errors";
 import {APIErrors} from "../../../helpers/types";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-import {deleteBook, getListBooks, upsertBook, exportBooks, getExportById} from "../services";
+import {deleteBook, exportBooks, getExportById, getListBooks, upsertBook} from "../services";
 import mqtt from "mqtt";
 
-const mqttHost = process.env.MIX_MQTT_HOST ?? 'localhost';
-const mqttPort = process.env.MIX_MQTT_PORT ?? '9001';
+const mqttHost = process.env.MIX_MQTT_HOST ?? 'ws://localhost:9001';
 
-const client = mqtt.connect(`ws://${mqttHost}:${mqttPort}`, {
+const client = mqtt.connect(`${mqttHost}`, {
     reconnectPeriod: 1000,
     connectTimeout: 5000,
     keepalive: 30,
@@ -19,7 +18,7 @@ const client = mqtt.connect(`ws://${mqttHost}:${mqttPort}`, {
 
 client.on('message', (topic, message) => {
     const parsed: ExportJob = JSON.parse(message.toString());
-    if (parsed.status !== "FINISHED") {
+    if (parsed.status !== ExportStatus.FINISHED) {
         return;
     }
 
@@ -178,7 +177,7 @@ export const FormTableProvider: React.FC<React.PropsWithChildren<{}>> = ({ child
     const handleListenExport = useCallback((exportJob: ExportJob) => {
         getExportById(exportJob.id)
             .then(res => {
-                if (res.data.status == "FINISHED") {
+                if (res.data.status == ExportStatus.FINISHED) {
                     window.open(res.data.downloadUrl, "_blank");
                     return;
                 }

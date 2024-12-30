@@ -7,9 +7,15 @@ export interface FormData {
     author: string;
 }
 
+export enum ExportStatus {
+    PENDING = "PENDING",
+    PROCESSING = "PROCESSING",
+    FINISHED = "FINISHED",
+}
+
 export interface ExportJob {
     id: number;
-    status: string;
+    status: ExportStatus;
     type: string;
     downloadUrl: string;
 }
