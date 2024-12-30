@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\DTO\Requests\ListBooksInput;
 use App\Http\DTO\Responses\Response as ResponseDTO;
 use App\Http\Requests\StoreBook;
-use App\Http\Services\BookService;
+use App\Services\BookService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -103,6 +103,13 @@ class BookController extends Controller
         return response()->json(new ResponseDTO($export));
     }
 
+    /**
+     * Get export job by id.
+     * Returns 404 if id is not found
+     *
+     * @param int $id
+     * @return JsonResponse
+     */
     public function getExportJobById(int $id): JsonResponse
     {
         try {
